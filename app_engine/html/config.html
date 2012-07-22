@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block head %}
+{{super()}}
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"> </script>
+		<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.21/jquery-ui.min.js"> </script>
+		<link rel="stylesheet" type="text/css" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery.ui.base.css">
+		<link rel="stylesheet" type="text/css" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery.ui.theme.css">
+		<style>
+			li {
+				display:block;
+			}
+		</style>
+{% endblock %}
+{% block content %}
+<form method="POST">
+	<table><tr><th>Name</th><th>Start</th><th>End</th><th>Differential Rate</th><th>Weekend?</th></tr>
+{% for shift in shifts %}
+<tr>
+	<td><input name="{{shift|key}}name" value="{{shift.name}}" {% if not shift.name %}placeholder="New..."{% endif %}></input> </td>
+	<td><input name="{{shift|key}}start" value="{{shift.start|datetime}}"></input></td>
+	<td><input name="{{shift|key}}end" value="{{shift.end|datetime}}"></input></td>
+	<td><input name="{{shift|key}}diff_rate" value="{{shift.diff_rate|currency}}"></input></td>
+	<td><input type="checkbox" name="{{shift|key}}weekend" {% if shift.weekend %}checked{% endif %}></input></td>
+
+</tr>
+{% endfor %}
+</table>
+
+
+<label for="base_rate">Base Rate:</label><input id="base_rate" name="base_rate" value={{settings.base_rate|currency}}></input><br>
+
+<label for="holiday_diff_rate">Holiday Differential Rate:</label><input id="holiday_diff_rate" name="holiday_diff_rate" value={{settings.holiday_diff_rate|currency}}></input><br>
+
+
+<label for="overtime_multiplier">Overtime Multiplier:</label><input id="overtime_multiplier" name="overtime_multiplier" value={{settings.overtime_multiplier}}></input><br>
+
+Holidays: <ul id="holiday_list" >
+{% for holiday in settings.holidays %}
+<li> <input name="holidays" class="datetime" value="{{ holiday.strftime('%m/%d/%Y') }}"></input> </li>
+{% endfor %}
+<li><input name="holidays" class="datetime" placeholder="Add..."></input>
+</ul>
+<script>
+	function changehandler()
+	{
+		$(this).unbind('change');
+		var holiday = $('<input name="holidays" placeholder="Add...">');
+		var li = $("<li>")
+		holiday.appendTo(li);
+		li.appendTo("#holiday_list");
+		holiday.bind('change',changehandler);
+		holiday.datepicker();
+	}
+	$(function(){
+		$(".datetime").datepicker();
+		$(".datetime").last().bind('change',changehandler);
+	});
+</script>
+
+
+<input type="submit" value="Save"></input>
+</form>
+{{ log }}
+{% endblock %}
